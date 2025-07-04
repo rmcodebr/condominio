@@ -4,6 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import gettext_lazy as _
 
 from . forms import UserChangeForm, UserCreationForm
+from .models import Profile
 
 User = get_user_model()
 
@@ -32,4 +33,9 @@ class UserAdmin(UserAdmin):
   
 
 
-# Register your models here.
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+  list_display = ['id', 'user', 'gender', 'occupation', 'slug']
+  list_display_links = ['id', 'user']
+  list_filter = ['occupation']
+

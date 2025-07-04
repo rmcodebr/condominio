@@ -44,8 +44,12 @@ INSTALLED_APPS = [
 
   'rest_framework',
   'drf_yasg',
+  'celery',
+  'django_celery_beat',
 
+  'common',
   'accounts',
+  
 ]
 
 MIDDLEWARE = [
@@ -124,6 +128,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'static'
+STATICFILES_DIRS = ['core/static']
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -131,6 +141,24 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = "accounts.User"
+
+# CELERY
+if USE_TZ:
+  CELERY_TIMEZONE = TIME_ZONE
+
+CELERY_BROKER_URL = config("CELERY_BROKER_URL")
+CELERY_RESULTS_BACKEND = config("CELERY_RESULTS_BACKEND")
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_RESULTS_BACKEND_MAX_RETRIES = 10
+CELERY_TASK_SEND_SENT_EVENT = True
+CELERY_RESULT_EXTENDED = True
+CELERY_RESULT_BACKEND_ALWAYS_RETRY = True
+CELERY_TASK_TIME_LIMIT = 5*60
+CELERY_TASK_SOFT_TIME_LIMIT = 60
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_WORKER_SEND_TASKS_EVENTS = True
 
 
 LOGGING = {

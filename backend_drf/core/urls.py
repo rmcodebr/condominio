@@ -4,6 +4,8 @@ from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from django.conf import settings
+from django.conf.urls.static import static
 
 schema_view = get_schema_view(
   openapi.Info(
@@ -29,3 +31,5 @@ admin.site.site_header="Condominio"
 admin.site.site_title="Condominio Portal"
 admin.site.index_title="Welcome to Condominio Portal"
 
+if settings.DEBUG:
+  urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
