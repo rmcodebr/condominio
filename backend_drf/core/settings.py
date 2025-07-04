@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
   'django.contrib.staticfiles',
 
   'rest_framework',
+  'djoser',
   'drf_yasg',
   'celery',
   'django_celery_beat',
@@ -91,6 +93,19 @@ DATABASES = {
   'NAME': BASE_DIR / 'db.sqlite3',
   }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': config('DB_ENGINE'),
+#         'NAME': config('DB_NAME'),
+#         'USER': config('DB_USER'),
+#         'PASSWORD': config('DB_PASSWORD'),
+#         'HOST': config('DB_HOST'),
+#         'PORT': config('DB_PORT'),
+#     }
+# }
+
 
 
 # Password validation
@@ -142,6 +157,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = "accounts.User"
 
+
+# EMAIL CONF
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
+
 # CELERY
 if USE_TZ:
   CELERY_TIMEZONE = TIME_ZONE
@@ -160,6 +185,61 @@ CELERY_TASK_SOFT_TIME_LIMIT = 60
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_WORKER_SEND_TASKS_EVENTS = True
 
+
+
+COOKIE_NAME = 'access'
+COOKIE_SAMESITE = 'Lax'
+COOKIE_PATH = '/'
+COOKIE_HTTPONLY = True
+COOKIE_SECURE = config('COOKIE_SECURE') == True
+
+REST_FRAMEWORK = {
+  'DEFAULT_AUTHENTICATION_CLASSES':('common.cookie_auth.CookieAuthentication'),
+  'DEFAULT_PERMISSION_CLASSES':('rest_framework.permissions.IsAuthenticated'),
+  'DEFAULT_PAGINATION_CLASS':('rest_framework.pagination.PageNumberPagination'),
+  'DEFAULT_FILTER_BACKENDS':['django_filters.rest_framework.DjangoFilterBackend',],
+  'PAGE_SIZE': 10,
+  'DEFAULT_THROTTLE_CLASSES':('rest_framework.throttling.AnonRateThrottle',
+                              'rest_framework.throttling.UserRateThrottle'),
+  'DEFAULT_THROTTLE_RATES': {
+    'anon': '200/day',
+    'user': '500/day',
+  }
+}
+
+SIMPLE_JWT = {
+  'SIGNING_KEY': config('SIGNING_KEY'),
+  'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+  'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+  'ROTATE_REFRESH_TOKENS': True,
+  'USER_ID_FIELD': 'id',
+  'USER_ID_CLAIM': 'user_id'
+}
+
+DJOSER = {
+  'USER_ID_FIELD': 'id',
+  'LOGIN_FIELD': 'email',
+  'TOKEN_MODEL': None,
+  'USER_CREATE_PASSWORD_RETYPE': True,
+  'SEND_ACTIVATION_EMAIL': True,
+  'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+  'PASSWORD_RESET_CONFIRM_RETYPE': True,
+  'ACTIVATION_URL': 'activate/{uid}/{token}',
+  'PASSWORD_RESET_CONFIRM_URL': 'password-reset/{uid}/[token]',
+  'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': config('REDIRECT_URIS').split(','),
+  'SERIALIZERS':{
+    'user_create': 'accounts.serializers.CreateUserSerializer',
+  }
+}
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('GOOGLE_CLIENT_ID')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config("GOOGLE_CLIENT_SECRET")
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
+  'openid',
+]
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name']
 
 LOGGING = {
     'version': 1,
