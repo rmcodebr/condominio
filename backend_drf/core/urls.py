@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
@@ -16,7 +16,7 @@ schema_view = get_schema_view(
     license=openapi.License(name='MIT License')    
   ),
   public=True,
-  permission_classes=[permissions.AllowAny],
+  permission_classes=[permissions.AllowAny,],
 )
 
 urlpatterns = [
@@ -24,6 +24,9 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 
     path('admin/', admin.site.urls),
+
+    path('api/v1/auth/', include('djoser.urls')),
+    path('api/v1/auth/', include('accounts.urls')),
 
 ]
 

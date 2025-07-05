@@ -48,6 +48,7 @@ INSTALLED_APPS = [
   'drf_yasg',
   'celery',
   'django_celery_beat',
+  'django_filters',
 
   'common',
   'accounts',
@@ -171,8 +172,14 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 if USE_TZ:
   CELERY_TIMEZONE = TIME_ZONE
 
-CELERY_BROKER_URL = config("CELERY_BROKER_URL")
-CELERY_RESULTS_BACKEND = config("CELERY_RESULTS_BACKEND")
+
+
+# CELERY_BROKER_URL = config("CELERY_BROKER_URL")
+# CELERY_RESULTS_BACKEND = config("CELERY_RESULTS_BACKEND")
+
+CELERY_BROKER_URL='redis://localhost:6379/0'
+CELERY_RESULTS_BACKEND='redis://localhost:6379/0'
+
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
@@ -194,17 +201,23 @@ COOKIE_HTTPONLY = True
 COOKIE_SECURE = config('COOKIE_SECURE') == True
 
 REST_FRAMEWORK = {
-  'DEFAULT_AUTHENTICATION_CLASSES':('common.cookie_auth.CookieAuthentication'),
-  'DEFAULT_PERMISSION_CLASSES':('rest_framework.permissions.IsAuthenticated'),
-  'DEFAULT_PAGINATION_CLASS':('rest_framework.pagination.PageNumberPagination'),
-  'DEFAULT_FILTER_BACKENDS':['django_filters.rest_framework.DjangoFilterBackend',],
-  'PAGE_SIZE': 10,
-  'DEFAULT_THROTTLE_CLASSES':('rest_framework.throttling.AnonRateThrottle',
-                              'rest_framework.throttling.UserRateThrottle'),
-  'DEFAULT_THROTTLE_RATES': {
-    'anon': '200/day',
-    'user': '500/day',
-  }
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "common.cookie_auth.CookieAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+    ],
+    "PAGE_SIZE": 10,
+    "DEFAULT_THROTTLE_CLASSES": (
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "200/day",
+        "user": "500/day",
+    },
 }
 
 SIMPLE_JWT = {
@@ -225,10 +238,11 @@ DJOSER = {
   'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
   'PASSWORD_RESET_CONFIRM_RETYPE': True,
   'ACTIVATION_URL': 'activate/{uid}/{token}',
-  'PASSWORD_RESET_CONFIRM_URL': 'password-reset/{uid}/[token]',
+  'PASSWORD_RESET_CONFIRM_URL': 'password-reset/{uid}/{token}',
   'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': config('REDIRECT_URIS').split(','),
   'SERIALIZERS':{
     'user_create': 'accounts.serializers.CreateUserSerializer',
+    'current_user': 'accounts.serializers.CustomUserSerializer',
   }
 }
 

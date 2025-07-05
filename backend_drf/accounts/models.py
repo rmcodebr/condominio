@@ -88,7 +88,7 @@ class Profile(TimeStampedModel):
         default=Occupation.TENANT,
     )
     phone_number = PhoneNumberField(
-        verbose_name=_("Phone Number"), max_length=30, default="+250784123456"
+        verbose_name=_("Phone Number"), max_length=30, default="+551198181"
     )
     country_of_origin = CountryField(verbose_name=_("Country"), default="BR")
     city_of_origin = models.CharField(
