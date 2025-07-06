@@ -1,3 +1,14 @@
+# If you use Redis as result backend:
+# Clear Celery task result keys (usually keys like celery-task-meta-*):
+
+# redis-cli --scan --pattern 'celery-task-meta-*' | while read key; do
+#   redis-cli del "$key"
+# done
+
+# Or flush the entire Redis DB if safe:
+# redis-cli FLUSHDB
+
+
 """
 Django settings for core project.
 
@@ -172,8 +183,6 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 if USE_TZ:
   CELERY_TIMEZONE = TIME_ZONE
 
-
-
 # CELERY_BROKER_URL = config("CELERY_BROKER_URL")
 # CELERY_RESULTS_BACKEND = config("CELERY_RESULTS_BACKEND")
 
@@ -189,8 +198,15 @@ CELERY_RESULT_EXTENDED = True
 CELERY_RESULT_BACKEND_ALWAYS_RETRY = True
 CELERY_TASK_TIME_LIMIT = 5*60
 CELERY_TASK_SOFT_TIME_LIMIT = 60
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 CELERY_WORKER_SEND_TASKS_EVENTS = True
+
+# # CELERY BEAT
+# CELERY_BEAT_SCHEDULER = {
+#   "update-reputations-every-day": {
+#     "task": "update_all_reputations"
+#   }
+# }
 
 
 
@@ -246,14 +262,26 @@ DJOSER = {
   }
 }
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('GOOGLE_CLIENT_ID')
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config("GOOGLE_CLIENT_ID")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config("GOOGLE_CLIENT_SECRET")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
-  'https://www.googleapis.com/auth/userinfo.email',
-  'https://www.googleapis.com/auth/userinfo.profile',
-  'openid',
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
+    "openid",
 ]
-SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name']
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ["first_name", "last_name"]
+
+SOCIAL_AUTH_PIPELINE = [
+    "social_core.pipeline.social_auth.social_details",
+    "social_core.pipeline.social_auth.social_uid",
+    "social_core.pipeline.social_auth.auth_allowed",
+    "social_core.pipeline.social_auth.social_user",
+    "social_core.pipeline.user.create_user",
+    "social_core.pipeline.social_auth.associate_user",
+    "social_core.pipeline.social_auth.load_extra_data",
+    "social_core.pipeline.user.user_details",
+    "accounts.pipeline.save_profile",
+]
 
 LOGGING = {
     'version': 1,
