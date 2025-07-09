@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Image from "next/image";
 import buildings from "@/../public/assets/images/buildings.webp";
 import Link from "next/link";
